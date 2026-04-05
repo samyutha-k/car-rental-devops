@@ -1,13 +1,11 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Clone Repo') {
-            steps {
-                git 'https://github.com/Medhuna/car-rental.git'
-            }
-        }
-
+    stage('Clone Repo') {
+    steps {
+        git branch: 'main', url: 'https://github.com/samyutha-k/car-rental-devops.git'
+    }
+}
         stage('Build Docker') {
             steps {
                 sh 'docker-compose build'
