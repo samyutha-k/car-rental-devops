@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Rental System - Owner Homepage</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/app-theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="/index" class="logo">
+                <i class="fas fa-car-side"></i> WheelsOnDemand
+            </a>
+            <nav>
+                <input type="checkbox" id="nav-toggle" class="nav-toggle">
+                <label for="nav-toggle" class="nav-toggle-label">
+                    <span></span>
+                </label>
+                <ul class="nav-links">
+                    <li><a href="/owner_homepage"><i class="fas fa-home"></i> Homepage</a></li>
+                    <li><a href="/owner_dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="/logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+<!-- ... (header unchanged) -->
+<main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">
+                    <i class="fas fa-info-circle"></i> {{ message }}
+                    <span class="close-flash">×</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <section class="dashboard-header">
+        <h1><i class="fas fa-home"></i> Owner Homepage</h1>
+        <p>Add and view your vehicles</p>
+        <div class="section-actions">
+            <a href="{{ url_for('add_vehicle') }}" class="btn btn-secondary">
+                <i class="fas fa-plus"></i> Add Vehicle
+            </a>
+        </div>
+    </section>
+
+    <section class="vehicle-section">
+        <h2>Your Vehicles</h2>
+        <div class="vehicle-grid">
+            {% for vehicle in vehicles %}
+            <div class="vehicle-card">
+                <div class="vehicle-image" style="background-image: url('/static/uploads/{{ vehicle.image }}')"></div>
+                <div class="vehicle-price">${{ vehicle.price_per_day|round(2) }}/day</div>
+                <div class="vehicle-details">
+                    <span class="vehicle-availability {{ 'available' if vehicle.available else 'rented' }}">{{ 'Available' if vehicle.available else 'Rented' }}</span>
+                    <h3>{{ vehicle.make }} {{ vehicle.model }}</h3>
+                    <div class="vehicle-info">
+                        <p><i class="fas fa-calendar-alt"></i> Year: {{ vehicle.year }}</p>
+                        <p><i class="fas fa-phone"></i> Contact: {{ vehicle.phone_number }}</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-vehicles">
+                <i class="fas fa-car-slash"></i>
+                <h3>No vehicles added</h3>
+                <p>Add a vehicle to get started!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    <!-- ... (add-vehicle-section unchanged) -->
+</main>
+<!-- ... (footer and scripts unchanged) -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>WheelsOnDemand</h3>
+                <p>Your premier destination for vehicle rentals.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="/index">Home</a></li>
+                    <li><a href="/catalog">Vehicles</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 WheelsOnDemand. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButtons = document.querySelectorAll('.close-flash');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            });
+            
+            setTimeout(function() {
+                const flashes = document.querySelectorAll('.flash');
+                flashes.forEach(flash => {
+                    flash.style.opacity = '0';
+                    setTimeout(() => {
+                        flash.style.display = 'none';
+                    }, 500);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

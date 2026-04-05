@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Rental System - My Reservations</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/app-theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="/index" class="logo">
+                <i class="fas fa-car-side"></i> WheelsOnDemand
+            </a>
+            <nav>
+                <input type="checkbox" id="nav-toggle" class="nav-toggle">
+                <label for="nav-toggle" class="nav-toggle-label">
+                    <span></span>
+                </label>
+                <ul class="nav-links">
+                    <li><a href="/index"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="/catalog"><i class="fas fa-th-list"></i> Catalog</a></li>
+                    <li><a href="/profile"><i class="fas fa-user-circle"></i> My Reservations</a></li>
+                    <li><a href="/logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+<!-- ... (header unchanged) -->
+<main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">
+                    <i class="fas fa-info-circle"></i> {{ message }}
+                    <span class="close-flash">×</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <section class="profile-header">
+        <h1><i class="fas fa-bookmark"></i> My Reservations</h1>
+        <p>Manage your upcoming and past vehicle bookings</p>
+    </section>
+
+    <section class="reservation-tabs">
+        <button class="tab-btn active" data-tab="upcoming">Upcoming</button>
+        <button class="tab-btn" data-tab="past">Past</button>
+    </section>
+    
+    <section class="tab-content" id="upcoming-tab">
+        <div class="reservation-grid">
+            {% for vehicle in reserved_vehicles if vehicle.is_upcoming %}
+            <div class="reservation-card">
+                <div class="reservation-status upcoming">
+                    <i class="fas fa-clock"></i> Upcoming
+                </div>
+                <div class="reservation-image" style="background-image: url('/static/uploads/{{ vehicle.image }}')"></div>
+                <div class="reservation-details">
+                    <h3>{{ vehicle.make }} {{ vehicle.model }}</h3>
+                    <div class="detail-row">
+                        <i class="fas fa-calendar-day"></i>
+                        <div>
+                            <strong>Reservation Period</strong>
+                            <p>{{ vehicle.start_date }} to {{ vehicle.end_date }}</p>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <div>
+                            <strong>Total Cost</strong>
+                            <p>${{ vehicle.total_cost|round(2) }}</p>
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ url_for('cancel_reservation', reservation_id=vehicle.reservation_id) }}" class="reservation-actions">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times-circle"></i> Cancel Reservation
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-reservations-container">
+                <div class="no-reservations">
+                    <i class="fas fa-bookmark-slash"></i>
+                    <h3>No upcoming reservations</h3>
+                    <p>Browse vehicles to book your next ride!</p>
+                    <a href="{{ url_for('catalog') }}" class="btn">Browse Vehicles</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    
+    <section class="tab-content hidden" id="past-tab">
+        <div class="reservation-grid">
+            {% for vehicle in reserved_vehicles if not vehicle.is_upcoming %}
+            <div class="reservation-card">
+                <div class="reservation-status completed">
+                    <i class="fas fa-check-circle"></i> Completed
+                </div>
+                <div class="reservation-image" style="background-image: url('/static/uploads/{{ vehicle.image }}')"></div>
+                <div class="reservation-details">
+                    <h3>{{ vehicle.make }} {{ vehicle.model }}</h3>
+                    <div class="detail-row">
+                        <i class="fas fa-calendar-day"></i>
+                        <div>
+                            <strong>Reservation Period</strong>
+                            <p>{{ vehicle.start_date }} to {{ vehicle.end_date }}</p>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <div>
+                            <strong>Total Cost</strong>
+                            <p>${{ vehicle.total_cost|round(2) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-reservations-container">
+                <div class="no-reservations">
+                    <i class="fas fa-bookmark-slash"></i>
+                    <h3>No past reservations</h3>
+                    <p>Browse vehicles to book your next ride!</p>
+                    <a href="{{ url_for('catalog') }}" class="btn">Browse Vehicles</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+<!-- ... (footer and scripts unchanged) -->
+    
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>WheelsOnDemand</h3>
+                <p>Your premier destination for vehicle rentals.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="/index">Home</a></li>
+                    <li><a href="/catalog">Vehicles</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 WheelsOnDemand. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButtons = document.querySelectorAll('.close-flash');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            });
+            
+            setTimeout(function() {
+                const flashes = document.querySelectorAll('.flash');
+                flashes.forEach(flash => {
+                    flash.style.opacity = '0';
+                    setTimeout(() => {
+                        flash.style.display = 'none';
+                    }, 500);
+                });
+            }, 5000);
+
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab + '-tab').classList.remove('hidden');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

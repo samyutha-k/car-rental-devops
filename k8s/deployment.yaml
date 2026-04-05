@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: car-rental-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: car-rental
+  template:
+    metadata:
+      labels:
+        app: car-rental
+    spec:
+      containers:
+        - name: car-rental
+          image: car-rental-app
+          ports:
+            - containerPort: 5000

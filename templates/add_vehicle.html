@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Vehicle - WheelsOnDemand</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/app-theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="/index" class="logo">
+                <i class="fas fa-car-side"></i> WheelsOnDemand
+            </a>
+            <nav>
+                <input type="checkbox" id="nav-toggle" class="nav-toggle">
+                <label for="nav-toggle" class="nav-toggle-label">
+                    <span></span>
+                </label>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('owner_homepage') }}"><i class="fas fa-home"></i> Homepage</a></li>
+                    <li><a href="{{ url_for('owner_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="/logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        <i class="fas fa-info-circle"></i> {{ message }}
+                        <span class="close-flash">×</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="dashboard-header">
+            <h1><i class="fas fa-plus"></i> Add a New Vehicle</h1>
+            <p>Enter the details for your new rental vehicle.</p>
+        </section>
+
+        <section class="form-section">
+            <form method="POST" action="{{ url_for('add_vehicle') }}" class="form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="make">Make</label>
+                    <input type="text" id="make" name="make" required>
+                </div>
+                <div class="form-group">
+                    <label for="model">Model</label>
+                    <input type="text" id="model" name="model" required>
+                </div>
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <input type="number" id="year" name="year" min="1900" max="2100" required>
+                </div>
+                <div class="form-group">
+                    <label for="price_per_day">Price per Day ($)</label>
+                    <input type="number" step="0.01" id="price_per_day" name="price_per_day" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone_number">Contact Phone</label>
+                    <input type="text" id="phone_number" name="phone_number" required>
+                </div>
+                <div class="form-group">
+                    <label for="images">Upload Image</label>
+                    <input type="file" id="images" name="images" accept="image/*">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-secondary"><i class="fas fa-save"></i> Add Vehicle</button>
+                    <a href="{{ url_for('owner_homepage') }}" class="btn">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>WheelsOnDemand</h3>
+                <p>Your premier destination for vehicle rentals.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="/index">Home</a></li>
+                    <li><a href="/catalog">Vehicles</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButtons = document.querySelectorAll('.close-flash');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

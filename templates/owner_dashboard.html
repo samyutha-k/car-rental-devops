@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Rental System - Owner Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/app-theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="/index" class="logo">
+                <i class="fas fa-car-side"></i> WheelsOnDemand
+            </a>
+            <nav>
+                <input type="checkbox" id="nav-toggle" class="nav-toggle">
+                <label for="nav-toggle" class="nav-toggle-label">
+                    <span></span>
+                </label>
+                <ul class="nav-links">
+                    <li><a href="/owner_homepage"><i class="fas fa-home"></i> Homepage</a></li>
+                    <li><a href="/owner_dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="/logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+<!-- ... (header unchanged) -->
+<main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">
+                    <i class="fas fa-info-circle"></i> {{ message }}
+                    <span class="close-flash">×</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <section class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Owner Dashboard</h1>
+        <p>Manage your vehicles and reservations</p>
+    </section>
+
+    {% if edit_vehicle %}
+    <section class="edit-vehicle-section">
+        <h2>Edit Vehicle</h2>
+        <form method="POST" action="{{ url_for('edit_vehicle', vehicle_id=edit_vehicle.id) }}" class="form" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="make">Make</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-car"></i>
+                        <input type="text" id="make" name="make" value="{{ edit_vehicle.make }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="model">Model</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-car-side"></i>
+                        <input type="text" id="model" name="model" value="{{ edit_vehicle.model }}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="number" id="year" name="year" value="{{ edit_vehicle.year }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="price_per_day">Price per Day ($)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <input type="number" id="price_per_day" name="price_per_day" step="0.01" value="{{ edit_vehicle.price_per_day }}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="phone_number">Phone Number</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-phone"></i>
+                    <input type="text" id="phone_number" name="phone_number" value="{{ edit_vehicle.phone_number }}" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="images">Upload New Images (replaces existing)</label>
+                <input type="file" id="images" name="images" multiple accept="image/*">
+                <p>Current images: {{ edit_vehicle.images or 'None' }}</p>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{{ url_for('owner_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </section>
+    {% endif %}
+
+    <section class="vehicle-section">
+        <h2>Your Vehicles</h2>
+        <div class="vehicle-grid">
+            {% for vr in vehicle_reservations %}
+            <div class="vehicle-card">
+                <div class="vehicle-image" style="background-image: url('/static/uploads/{{ vr.vehicle.image }}')"></div>
+                <div class="vehicle-price">${{ vr.vehicle.price_per_day|round(2) }}/day</div>
+                <div class="vehicle-details">
+                    <span class="vehicle-availability {{ 'available' if vr.vehicle.available else 'rented' }}">{{ 'Available' if vr.vehicle.available else 'Rented' }}</span>
+                    <h3>{{ vr.vehicle.make }} {{ vr.vehicle.model }}</h3>
+                    <div class="vehicle-info">
+                        <p><i class="fas fa-calendar-alt"></i> Year: {{ vr.vehicle.year }}</p>
+                        <p><i class="fas fa-phone"></i> Contact: {{ vr.vehicle.phone_number }}</p>
+                    </div>
+                    <div class="vehicle-actions">
+                        <a href="{{ url_for('edit_vehicle', vehicle_id=vr.vehicle.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <form method="POST" action="{{ url_for('remove_vehicle', vehicle_id=vr.vehicle.id) }}" class="inline-form">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i> Remove
+                            </button>
+                        </form>
+                    </div>
+                    <div class="reservation-toggle">
+                        <button class="toggle-btn" data-vehicle-id="{{ vr.vehicle.id }}">
+                            <i class="fas fa-chevron-down"></i> View Reservations ({{ vr.reservations|length }})
+                        </button>
+                        <div class="reservation-list hidden" id="reservations-{{ vr.vehicle.id }}">
+                            {% if vr.reservations %}
+                            <ul>
+                                {% for res in vr.reservations %}
+                                <li>
+                                    <strong>Customer:</strong> {{ res.customer_username }}<br>
+                                    <strong>Period:</strong> {{ res.start_date }} to {{ res.end_date }}<br>
+                                    <strong>Total:</strong> ${{ res.total_cost|round(2) }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="no-reservations-text">No reservations for this vehicle.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-vehicles">
+                <i class="fas fa-car-slash"></i>
+                <h3>No vehicles added</h3>
+                <p>Add a vehicle to get started!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+<!-- ... (footer and scripts unchanged) -->
+    
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>WheelsOnDemand</h3>
+                <p>Your premier destination for vehicle rentals.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="/index">Home</a></li>
+                    <li><a href="/catalog">Vehicles</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 WheelsOnDemand. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="/static/js/owner_dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButtons = document.querySelectorAll('.close-flash');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            });
+            
+            setTimeout(function() {
+                const flashes = document.querySelectorAll('.flash');
+                flashes.forEach(flash => {
+                    flash.style.opacity = '0';
+                    setTimeout(() => {
+                        flash.style.display = 'none';
+                    }, 500);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

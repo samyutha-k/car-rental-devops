@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Rental System - Reservation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/app-theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="/index" class="logo">
+                <i class="fas fa-car-side"></i> WheelsOnDemand
+            </a>
+            <nav>
+                <input type="checkbox" id="nav-toggle" class="nav-toggle">
+                <label for="nav-toggle" class="nav-toggle-label">
+                    <span></span>
+                </label>
+                <ul class="nav-links">
+                    <li><a href="/index"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="/catalog"><i class="fas fa-th-list"></i> Catalog</a></li>
+                    <li><a href="/profile"><i class="fas fa-user-circle"></i> My Reservations</a></li>
+                    <li><a href="/logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">
+                <i class="fas fa-info-circle"></i> {{ message }}
+                <span class="close-flash">×</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        <section class="reservation-header">
+            <h1><i class="fas fa-car"></i> Reserve {{ vehicle.make }} {{ vehicle.model }}</h1>
+            <p>Complete your booking details below</p>
+        </section>
+<!-- ... (header unchanged) -->
+<section class="reservation-content">
+    <div class="vehicle-details">
+        <div class="vehicle-image" style="background-image: url('/static/uploads/{{ vehicle.image }}')"></div>
+        <div class="vehicle-info">
+            <h2>{{ vehicle.make }} {{ vehicle.model }}</h2>
+            <p><i class="fas fa-calendar-alt"></i> Year: {{ vehicle.year }}</p>
+            <p><i class="fas fa-money-bill-wave"></i> ${{ vehicle.price_per_day|round(2) }}/day</p>
+            <p><i class="fas fa-phone"></i> Contact: {{ vehicle.phone_number }}</p>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('reserve', vehicle_id=vehicle.id) }}" class="reservation-form" data-price-per-day="{{ vehicle.price_per_day }}">
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <div class="input-with-icon">
+                <i class="fas fa-calendar-day"></i>
+                <input type="date" id="start_date" name="start_date" min="{{ today }}" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            <div class="input-with-icon">
+                <i class="fas fa-calendar-day"></i>
+                <input type="date" id="end_date" name="end_date" min="{{ today }}" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="total_cost">Total Cost</label>
+            <div class="input-with-icon">
+                <i class="fas fa-money-bill-wave"></i>
+                <input type="text" id="total_cost" name="total_cost" readonly>
+            </div>
+        </div>
+        <button type="submit" class="btn">
+            <i class="fas fa-check-circle"></i> Confirm Reservation
+        </button>
+    </form>
+</section>
+<!-- ... (footer and scripts unchanged) -->
+    </main>
+    
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>WheelsOnDemand</h3>
+                <p>Your premier destination for vehicle rentals.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="/index">Home</a></li>
+                    <li><a href="/catalog">Vehicles</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 WheelsOnDemand. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButtons = document.querySelectorAll('.close-flash');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            });
+            
+            setTimeout(function() {
+                const flashes = document.querySelectorAll('.flash');
+                flashes.forEach(flash => {
+                    flash.style.opacity = '0';
+                    setTimeout(() => {
+                        flash.style.display = 'none';
+                    }, 500);
+                });
+            }, 5000);
+
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+            const totalCostInput = document.getElementById('total_cost');
+            const form = document.querySelector('.reservation-form');
+            const pricePerDay = parseFloat(form.dataset.pricePerDay) || 0;
+
+            function calculateTotalCost() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                
+                if (startDate && endDate && endDate >= startDate) {
+                    const diffTime = Math.abs(endDate - startDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+                    const totalCost = (diffDays * pricePerDay).toFixed(2);
+                    totalCostInput.value = `$${totalCost}`;
+                } else {
+                    totalCostInput.value = '$0.00';
+                }
+            }
+
+            startDateInput.addEventListener('change', calculateTotalCost);
+            endDateInput.addEventListener('change', calculateTotalCost);
+        });
+    </script>
+</body>
+</html>
