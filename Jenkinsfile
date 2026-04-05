@@ -1,21 +1,39 @@
 pipeline {
     agent any
 
-    stage('Clone Repo') {
-    steps {
-        git branch: 'main', url: 'https://github.com/samyutha-k/car-rental-devops.git'
+    environment {
+        COMPOSE_FILE = 'docker-compose.yml'
     }
-}
-        stage('Build Docker') {
+
+    stages {
+
+        stage('Checkout Code') {
             steps {
-                sh 'docker-compose build'
+                checkout scm
             }
         }
 
-        stage('Run Containers') {
+        stage('Build & Run Containers') {
             steps {
-                sh 'docker-compose up -d'
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d --build'
             }
+        }
+
+        stage('Verify Containers') {
+            steps {
+                sh 'docker ps'
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo 'Build SUCCESS ✅'
+        }
+        failure {
+            echo 'Build FAILED ❌'
         }
     }
 }
