@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        COMPOSE_FILE = 'docker-compose.yml'
-    }
-
     stages {
 
         stage('Checkout Code') {
@@ -13,27 +9,20 @@ pipeline {
             }
         }
 
-        stage('Build & Run Containers') {
+        stage('Run Docker Manually') {
             steps {
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d --build'
+                sh 'docker stop car-rental || true'
+                sh 'docker rm car-rental || true'
+                sh 'docker build -t car-rental-app .'
+                sh 'docker run -d -p 5000:5000 --name car-rental car-rental-app'
             }
         }
 
-        stage('Verify Containers') {
+        stage('Verify') {
             steps {
                 sh 'docker ps'
             }
         }
 
-    }
-
-    post {
-        success {
-            echo 'Build SUCCESS ✅'
-        }
-        failure {
-            echo 'Build FAILED ❌'
-        }
     }
 }
